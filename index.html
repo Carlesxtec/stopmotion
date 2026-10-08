@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineXics - Stop Motion per a Nens</title>
+    <!-- Tailwind CSS per a les estructures ràpides -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome per a les icones divertides -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font rodona i infantil 'Fredoka' de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        body {
+            background-color: #38bdf8;
+            background-image: radial-gradient(#7dd3fc 2px, transparent 2px);
+            background-size: 24px 24px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Botons en 3D estil joc infantil */
+        .btn-3d {
+            transition: all 0.1s ease;
+            box-shadow: 0px 8px 0px rgba(0, 0, 0, 0.25);
+        }
+        .btn-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-3d-red {
+            background-color: #ff4757;
+            border: 4px solid #ffffff;
+            color: white;
+            box-shadow: 0px 8px 0px #c0392b;
+        }
+        .btn-3d-red:active {
+            box-shadow: 0px 2px 0px #c0392b;
+        }
+
+        .btn-3d-green {
+            background-color: #2ed573;
+            border: 4px solid #ffffff;
+            color: white;
+            box-shadow: 0px 8px 0px #26af5f;
+        }
+        .btn-3d-green:active {
+            box-shadow: 0px 2px 0px #26af5f;
+        }
+
+        .btn-3d-yellow {
+            background-color: #ffa502;
+            border: 4px solid #ffffff;
+            color: white;
+            box-shadow: 0px 8px 0px #e1b12c;
+        }
+        .btn-3d-yellow:active {
+            box-shadow: 0px 2px 0px #e1b12c;
+        }
+
+        .btn-3d-purple {
+            background-color: #9b59b6;
+            border: 4px solid #ffffff;
+            color: white;
+            box-shadow: 0px 8px 0px #8e44ad;
+        }
+        .btn-3d-purple:active {
+            box-shadow: 0px 2px 0px #8e44ad;
+        }
+
+        /* Animació de Flash de Foto */
+        .flash-animation {
+            animation: yellowFlash 0.3s ease-out;
+        }
+        @keyframes yellowFlash {
+            0% { opacity: 0.9; background-color: #f1c40f; }
+            100% { opacity: 0; background-color: transparent; }
+        }
+
+        /* Rebot de la tecla premuda */
+        .key-active {
+            transform: scale(0.92) !important;
+            filter: brightness(1.2);
+        }
+
+        /* Scrollbar divertit */
+        ::-webkit-scrollbar {
+            height: 14px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0f2fe;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38bdf8;
+            border-radius: 10px;
+            border: 3px solid #e0f2fe;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0284c7;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col justify-between overflow-hidden p-2 sm:p-4">
+
+    <!-- CAPÇALERA INFANTIL -->
+    <header class="bg-white rounded-3xl p-3 shadow-lg border-4 border-sky-300 flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <div class="bg-amber-400 text-white w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner border-2 border-amber-300 rotate-[-4deg]">
+                🍿
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-sky-600 tracking-wide flex items-center gap-2">
+                    Cine<span class="text-pink-500">Xics</span> 🎬
+                </h1>
+                <p class="text-xs sm:text-sm font-semibold text-sky-400 hidden sm:block">Fes la teva pròpia pel·lícula de dibuixos o ninos!</p>
+            </div>
+        </div>
+
+        <!-- INDICADORS DE TECLES MARCADES -->
+        <div class="flex items-center gap-2 sm:gap-4">
+            <div id="badge-space" class="bg-amber-100 border-2 border-amber-400 text-amber-800 px-3 py-1.5 rounded-2xl flex items-center gap-2 text-xs sm:text-base font-bold shadow-sm">
+                <span class="bg-amber-400 text-white px-2 py-0.5 rounded-xl font-mono text-xs sm:text-sm shadow">ESPAI ␣</span>
+                <span class="hidden md:inline">= 📸 Foto!</span>
+            </div>
+            <div id="badge-enter" class="bg-emerald-100 border-2 border-emerald-400 text-emerald-800 px-3 py-1.5 rounded-2xl flex items-center gap-2 text-xs sm:text-base font-bold shadow-sm">
+                <span class="bg-emerald-500 text-white px-2 py-0.5 rounded-xl font-mono text-xs sm:text-sm shadow">INTRO ↵</span>
+                <span class="hidden md:inline">= 🎬 Pel·lícula!</span>
+            </div>
+        </div>
+
+        <!-- BOTÓ PER NETEJAR TOT -->
+        <button id="btn-clear" type="button" class="btn-3d btn-3d-red px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 outline-none">
+            <i class="fa-solid fa-rotate-left text-lg"></i>
+            <span class="hidden sm:inline">Començar de nou</span>
+        </button>
+    </header>
+
+    <!-- ZONA PRINCIPAL DE TREBALL -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 my-2 sm:my-3 min-h-0 relative">
+        
+        <!-- Flash Effect -->
+        <div id="flash-overlay" class="pointer-events-none absolute inset-0 z-50 opacity-0 rounded-3xl"></div>
+
+        <!-- NOTIFICACIÓ FLOTANT (TOAST) -->
+        <div id="toast-message" class="fixed top-20 right-6 z-50 transform translate-x-full transition-transform duration-300 ease-in-out bg-amber-400 text-slate-900 border-4 border-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-base">
+            <span id="toast-icon" class="text-2xl">💡</span>
+            <span id="toast-text">Títol de prova</span>
+        </div>
+
+        <!-- PANTALLA DE CÀMERA (STAGE) -->
+        <div class="lg:col-span-3 bg-white rounded-3xl border-4 border-sky-300 p-3 sm:p-4 flex flex-col justify-between items-center relative shadow-xl overflow-hidden">
+            
+            <!-- Barra Superior de la Càmera -->
+            <div class="w-full flex justify-between items-center mb-2 text-xs sm:text-sm font-bold text-sky-800 bg-sky-100/80 p-2 sm:p-2.5 rounded-2xl border-2 border-sky-200">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📷</span>
+                    <span id="camera-status" class="text-sky-700">Iniciant càmera...</span>
+                    <select id="camera-select" class="bg-white text-sky-900 text-xs rounded-xl border-2 border-sky-300 px-2 py-1 outline-none font-semibold max-w-[140px] sm:max-w-[200px] cursor-pointer">
+                        <option value="">Buscant càmera...</option>
+                    </select>
+                </div>
+
+                <!-- Interruptor Pell de ceba -->
+                <div class="flex items-center gap-2 sm:gap-3 bg-white px-3 py-1 rounded-xl border-2 border-sky-200">
+                    <label class="cursor-pointer flex items-center gap-1.5 font-bold text-sky-700">
+                        <input type="checkbox" id="onion-skin-toggle" checked class="accent-pink-500 w-5 h-5 cursor-pointer">
+                        <span>👻 Fantasma</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Contenidor del Vídeo de la Càmera -->
+            <div id="stage-container" class="relative w-full flex-1 flex items-center justify-center bg-slate-900 rounded-2xl overflow-hidden border-4 border-sky-200 min-h-[220px]">
+                
+                <!-- En cas de no tenir càmera -->
+                <div id="camera-fallback" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-amber-50 text-amber-900 z-20">
+                    <span class="text-6xl mb-2">🙈</span>
+                    <h3 class="text-xl font-bold text-amber-800 mb-1">On és la càmera?</h3>
+                    <p class="text-sm font-semibold mb-4 text-amber-700 max-w-sm">Dona permís al navegador per poder veure la teva carona i els teus ninos!</p>
+                    <button id="btn-retry-camera" type="button" class="btn-3d btn-3d-yellow px-4 py-2 rounded-xl text-sm font-bold">
+                        Tornar a provar 🔄
+                    </button>
+                </div>
+
+                <!-- Càmera en directe -->
+                <video id="webcam-video" autoplay playsinline muted class="w-full h-full object-contain"></video>
+
+                <!-- Imatge Fantasma / Pell de Ceba del fotograma anterior -->
+                <img id="onion-skin-img" class="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-40 mix-blend-screen hidden" alt="Foto anterior fantasma">
+
+                <!-- Graella de guia opcional -->
+                <div id="grid-overlay" class="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3 border-2 border-white/20 opacity-40">
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                    <div class="border border-white/20"></div>
+                </div>
+            </div>
+
+            <!-- BOTONS GRANS GEGANTS PER A NENS -->
+            <div class="w-full mt-3 flex flex-col sm:flex-row items-center justify-between gap-3 z-10">
+                <button id="btn-capture" type="button" class="btn-3d btn-3d-yellow w-full sm:flex-1 py-3 sm:py-4 rounded-2xl font-extrabold text-lg sm:text-xl flex items-center justify-center gap-3 outline-none">
+                    <span class="text-2xl sm:text-3xl">📸</span>
+                    <span>FER FOTO <span class="bg-white/30 px-2 py-0.5 rounded-lg text-xs font-mono ml-1">ESPAI ␣</span></span>
+                </button>
+
+                <button id="btn-generate-video" type="button" class="btn-3d btn-3d-green w-full sm:flex-1 py-3 sm:py-4 rounded-2xl font-extrabold text-lg sm:text-xl flex items-center justify-center gap-3 outline-none">
+                    <span class="text-2xl sm:text-3xl">🍿</span>
+                    <span>MIRA LA PELI! <span class="bg-white/30 px-2 py-0.5 rounded-lg text-xs font-mono ml-1">INTRO ↵</span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL LATERAL DE DECORACIÓ I VELOCITAT -->
+        <div class="bg-white rounded-3xl border-4 border-sky-300 p-4 flex flex-col gap-4 justify-between shadow-xl">
+            
+            <div class="space-y-4">
+                <h2 class="text-base font-extrabold text-sky-700 uppercase tracking-wide border-b-4 border-sky-100 pb-2 flex items-center gap-2">
+                    <span>⚡</span> Velocitat de la peli
+                </h2>
+
+                <!-- Control de Velocitat / FPS -->
+                <div class="bg-sky-50 p-3.5 rounded-2xl border-2 border-sky-200 space-y-2">
+                    <div class="flex justify-between items-center text-sm font-bold text-sky-900">
+                        <span>Rapidesa:</span>
+                        <span id="fps-value" class="bg-pink-500 text-white text-xs px-2.5 py-1 rounded-xl">Mitjana (6 foto/s)</span>
+                    </div>
+                    <input type="range" id="fps-range" min="1" max="15" value="6" class="w-full accent-pink-500 h-3 bg-sky-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-[11px] font-bold text-sky-400">
+                        <span>🐢 A poc a poc</span>
+                        <span>🐇 Ràpid</span>
+                    </div>
+                </div>
+
+                <!-- RESUM DE FOTOS -->
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="bg-pink-100 border-2 border-pink-300 p-2.5 rounded-2xl">
+                        <span class="block text-xs font-extrabold text-pink-600 uppercase">📸 Fotos</span>
+                        <span id="stat-frames" class="text-2xl sm:text-3xl font-black text-pink-500">0</span>
+                    </div>
+                    <div class="bg-purple-100 border-2 border-purple-300 p-2.5 rounded-2xl">
+                        <span class="block text-xs font-extrabold text-purple-600 uppercase">⏱️ Durada</span>
+                        <span id="stat-duration" class="text-2xl sm:text-3xl font-black text-purple-600">0s</span>
+                    </div>
+                </div>
+
+                <!-- OPCIONS DE CÀMERA -->
+                <div class="space-y-2 pt-1 font-bold text-xs sm:text-sm text-sky-800">
+                    <label class="flex items-center justify-between p-2 rounded-xl bg-sky-50 border-2 border-sky-100 cursor-pointer">
+                        <span class="flex items-center gap-2">📐 Graella de guia</span>
+                        <input type="checkbox" id="toggle-grid" checked class="accent-pink-500 w-4 h-4 rounded">
+                    </label>
+                    <label class="flex items-center justify-between p-2 rounded-xl bg-sky-50 border-2 border-sky-100 cursor-pointer">
+                        <span class="flex items-center gap-2">🪞 Effecte Mirall</span>
+                        <input type="checkbox" id="toggle-mirror" class="accent-pink-500 w-4 h-4 rounded">
+                    </label>
+                </div>
+            </div>
+
+            <!-- CONSELL PER A NENS -->
+            <div class="bg-amber-100 border-2 border-amber-300 p-3 rounded-2xl text-xs font-bold text-amber-900 flex items-center gap-2.5">
+                <span class="text-3xl">🤖</span>
+                <p>Moute ben poquet entre foto i foto perquè sembli màgia!</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- GALERIA / LÍNIA DE TEMPS INFANTIL -->
+    <footer class="bg-white rounded-3xl border-4 border-sky-300 p-3 h-40 flex flex-col justify-between shadow-xl z-10">
+        <div class="flex justify-between items-center px-1">
+            <h3 class="text-xs sm:text-sm font-extrabold text-sky-700 uppercase tracking-wide flex items-center gap-2">
+                <span>🎞️</span> La teva tira de fotos
+            </h3>
+            <span id="frame-counter" class="text-xs font-bold bg-sky-100 text-sky-800 px-3 py-1 rounded-xl">Cap foto feta encara</span>
+        </div>
+
+        <div id="timeline" class="flex-1 flex gap-3 overflow-x-auto items-center p-2 rounded-2xl bg-sky-50 border-2 border-sky-200">
+            <div id="timeline-empty" class="w-full text-center text-sky-400 font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-1">
+                <span>Prem el botó groc o la tecla <strong class="bg-amber-300 text-amber-900 px-2 py-0.5 rounded-lg">ESPAI ␣</strong> per fer la primera foto! 📸</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL "CINE PER A NENS" QUAN PREMEN INTRO -->
+    <div id="video-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 hidden">
+        <div class="bg-amber-400 border-8 border-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col relative">
+            
+            <!-- Capçalera del Cine -->
+            <div class="bg-amber-500 p-4 border-b-4 border-amber-600 flex justify-between items-center text-white">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl sm:text-4xl">🍿</span>
+                    <h3 class="font-black text-xl sm:text-2xl tracking-wide drop-shadow-md">LA TEVA PEL·LÍCULA!</h3>
+                </div>
+                <button id="btn-close-modal" type="button" class="btn-3d btn-3d-red w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xl outline-none">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Pantalla de Cinema -->
+            <div class="p-4 sm:p-6 flex flex-col items-center justify-center bg-slate-950 min-h-[260px] sm:min-h-[340px] relative border-y-4 border-amber-600">
+                
+                <!-- Processant el vídeo -->
+                <div id="video-rendering-state" class="flex flex-col items-center gap-3 text-white">
+                    <span class="text-6xl animate-bounce">🎬</span>
+                    <p class="font-bold text-lg text-amber-300">Muntant el teu vídeo de stop motion...</p>
+                    <span id="rendering-progress" class="text-xs font-mono text-slate-400">Un segonsí...</span>
+                </div>
+
+                <!-- Reproductor del Vídeo -->
+                <video id="generated-video-player" controls loop autoplay class="w-full max-h-[55vh] rounded-2xl hidden border-4 border-white shadow-2xl"></video>
+            </div>
+
+            <!-- Peus de Modal amb Opció de Descarregar -->
+            <div class="p-4 bg-amber-400 flex flex-wrap justify-between items-center gap-3">
+                <div class="text-xs sm:text-sm font-extrabold text-amber-950">
+                    🍿 Prepara les crispetes i gaudeix!
+                </div>
+                <div class="flex gap-2">
+                    <button id="btn-close-modal-footer" type="button" class="btn-3d btn-3d-purple px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold">
+                        Tancar ✖️
+                    </button>
+                    <a id="btn-download-video" download="la_meva_pelicula.webm" class="btn-3d btn-3d-green px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-2 pointer-events-none opacity-50">
+                        <span>Descarregar la Peli ⬇️</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ELEMENTS DE LA INTERFÍCIE
+        const video = document.getElementById('webcam-video');
+        const onionSkinImg = document.getElementById('onion-skin-img');
+        const timeline = document.getElementById('timeline');
+        const timelineEmpty = document.getElementById('timeline-empty');
+        
+        const btnCapture = document.getElementById('btn-capture');
+        const btnGenerateVideo = document.getElementById('btn-generate-video');
+        const btnClear = document.getElementById('btn-clear');
+        const fpsRange = document.getElementById('fps-range');
+        const fpsValue = document.getElementById('fps-value');
+        const cameraSelect = document.getElementById('camera-select');
+        const cameraStatus = document.getElementById('camera-status');
+        const cameraFallback = document.getElementById('camera-fallback');
+        const btnRetryCamera = document.getElementById('btn-retry-camera');
+        const onionSkinToggle = document.getElementById('onion-skin-toggle');
+        const toggleGrid = document.getElementById('toggle-grid');
+        const toggleMirror = document.getElementById('toggle-mirror');
+        const gridOverlay = document.getElementById('grid-overlay');
+        const flashOverlay = document.getElementById('flash-overlay');
+
+        const badgeSpace = document.getElementById('badge-space');
+        const badgeEnter = document.getElementById('badge-enter');
+
+        const statFrames = document.getElementById('stat-frames');
+        const statDuration = document.getElementById('stat-duration');
+        const frameCounter = document.getElementById('frame-counter');
+
+        // MODAL DE CINE
+        const videoModal = document.getElementById('video-modal');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnCloseModalFooter = document.getElementById('btn-close-modal-footer');
+        const generatedVideoPlayer = document.getElementById('generated-video-player');
+        const videoRenderingState = document.getElementById('video-rendering-state');
+        const renderingProgress = document.getElementById('rendering-progress');
+        const btnDownloadVideo = document.getElementById('btn-download-video');
+
+        // TOAST
+        const toastMessage = document.getElementById('toast-message');
+        const toastText = document.getElementById('toast-text');
+
+        let frames = [];
+        let currentStream = null;
+        let generatedVideoUrl = null;
+
+        // WEB AUDIO SYNTHESIZER PER A EFECTES SONORS DIVERTITS SENSE FITXERS EXTERNS
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx && AudioCtx) {
+                audioCtx = new AudioCtx();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // So de Clic de botó
+        function playPopSound() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.08);
+
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        // So de Foto / Obturador Divertit
+        function playCameraSound() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(900, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.12);
+
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.12);
+            } catch (e) {}
+        }
+
+        // Fanfàrria de Celebració quan es genera la pel·lícula
+        function playCelebrationSound() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                
+                const notes = [261.63, 329.63, 392.00, 523.25]; // Do, Mi, Sol, Do alt
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.12));
+                    
+                    gain.gain.setValueAtTime(0, ctx.currentTime + (idx * 0.12));
+                    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + (idx * 0.12) + 0.02);
+                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + (idx * 0.12) + 0.25);
+                    
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    
+                    osc.start(ctx.currentTime + (idx * 0.12));
+                    osc.stop(ctx.currentTime + (idx * 0.12) + 0.25);
+                });
+            } catch (e) {}
+        }
+
+        // Mostrar Toast Infantil
+        function showToast(msg) {
+            toastText.textContent = msg;
+            toastMessage.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toastMessage.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // CONTROL DE LA CÀMERA
+        async function initCamera(deviceId = null) {
+            try {
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: deviceId ? { deviceId: { exact: deviceId } } : { width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                currentStream = stream;
+                video.srcObject = stream;
+                
+                cameraStatus.textContent = "Càmera a punt! 😃";
+                cameraFallback.classList.add('hidden');
+
+                await loadCameraDevices();
+            } catch (err) {
+                console.error("Error en carregar la càmera:", err);
+                cameraStatus.textContent = "Sense càmera 😞";
+                cameraFallback.classList.remove('hidden');
+            }
+        }
+
+        async function loadCameraDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                cameraSelect.innerHTML = '';
+                if (videoDevices.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.text = "Sense càmera";
+                    cameraSelect.appendChild(opt);
+                    return;
+                }
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Càmera ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+            } catch (e) {}
+        }
+
+        // CAPTURAR FOTOGRAMA
+        function captureFrame() {
+            playCameraSound();
+
+            // Efecte de flash groc divertit
+            flashOverlay.className = "pointer-events-none absolute inset-0 z-50 flash-animation";
+            setTimeout(() => {
+                flashOverlay.className = "pointer-events-none absolute inset-0 z-50 opacity-0";
+            }, 300);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 1280;
+            canvas.height = video.videoHeight || 720;
+            const ctx = canvas.getContext('2d');
+
+            if (toggleMirror.checked) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            frames.push(imageDataUrl);
+
+            updateTimeline();
+            updateOnionSkin();
+            updateStats();
+        }
+
+        // ACTUALITZAR LA GALERIA/LÍNIA DE TEMPS
+        function updateTimeline() {
+            timeline.innerHTML = '';
+
+            if (frames.length === 0) {
+                timeline.appendChild(timelineEmpty);
+                return;
+            }
+
+            frames.forEach((frameData, index) => {
+                const item = document.createElement('div');
+                item.className = "relative group flex-shrink-0 w-28 h-20 bg-slate-900 rounded-2xl border-4 border-sky-300 overflow-hidden cursor-pointer shadow-md transition-all hover:scale-105";
+                
+                item.innerHTML = `
+                    <img src="${frameData}" class="w-full h-full object-cover" alt="Foto ${index + 1}">
+                    <span class="absolute bottom-1 left-1 bg-pink-500 text-white font-black text-[10px] px-2 py-0.5 rounded-lg shadow">
+                        #${index + 1}
+                    </span>
+                    <button type="button" onclick="deleteFrame(${index}, event)" class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center opacity-90 transition-opacity text-xs border-2 border-white shadow" title="Esborrar foto">
+                        ✕
+                    </button>
+                `;
+
+                timeline.appendChild(item);
+            });
+
+            timeline.scrollLeft = timeline.scrollWidth;
+        }
+
+        window.deleteFrame = function(index, event) {
+            if (event) event.stopPropagation();
+            playPopSound();
+            frames.splice(index, 1);
+            updateTimeline();
+            updateOnionSkin();
+            updateStats();
+        };
+
+        // ACTUALITZAR PELL DE CEBA (FANTASMA)
+        function updateOnionSkin() {
+            if (frames.length > 0 && onionSkinToggle.checked) {
+                onionSkinImg.src = frames[frames.length - 1];
+                onionSkinImg.classList.remove('hidden');
+            } else {
+                onionSkinImg.classList.add('hidden');
+            }
+        }
+
+        // ACTUALITZAR ESTADÍSTIQUES
+        function updateStats() {
+            const count = frames.length;
+            const fps = parseInt(fpsRange.value);
+            const duration = count > 0 ? (count / fps).toFixed(1) : "0.0";
+
+            statFrames.textContent = count;
+            statDuration.textContent = `${duration}s`;
+            frameCounter.textContent = count === 0 ? "Cap foto feta encara" : `${count} ${count === 1 ? 'foto feta' : 'fotos fetes'} 📸`;
+        }
+
+        // GENERAR I REPRODUIR EL VÍDEO AMB MEDIARECORDER
+        async function generateVideo() {
+            if (frames.length === 0) {
+                showToast("📸 Fes almenys 1 foto primer!");
+                return;
+            }
+
+            playCelebrationSound();
+
+            videoModal.classList.remove('hidden');
+            videoRenderingState.classList.remove('hidden');
+            generatedVideoPlayer.classList.add('hidden');
+            btnDownloadVideo.classList.add('pointer-events-none', 'opacity-50');
+
+            const fps = parseInt(fpsRange.value);
+            renderingProgress.textContent = "Preparant les crispetes i el vídeo...";
+
+            // Carregar imatges en memòria
+            const loadedImages = await Promise.all(frames.map(src => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.src = src;
+                });
+            }));
+
+            const canvas = document.createElement('canvas');
+            const sampleImg = loadedImages[0];
+            canvas.width = sampleImg.naturalWidth || 1280;
+            canvas.height = sampleImg.naturalHeight || 720;
+            const ctx = canvas.getContext('2d');
+
+            const stream = canvas.captureStream(fps);
+            let mediaRecorder;
+
+            try {
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
+                        ? 'video/webm;codecs=vp9' 
+                        : 'video/webm'
+                });
+            } catch (e) {
+                mediaRecorder = new MediaRecorder(stream);
+            }
+
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                
+                if (generatedVideoUrl) {
+                    URL.revokeObjectURL(generatedVideoUrl);
+                }
+                
+                generatedVideoUrl = URL.createObjectURL(blob);
+                generatedVideoPlayer.src = generatedVideoUrl;
+
+                videoRenderingState.classList.add('hidden');
+                generatedVideoPlayer.classList.remove('hidden');
+
+                btnDownloadVideo.href = generatedVideoUrl;
+                btnDownloadVideo.classList.remove('pointer-events-none', 'opacity-50');
+            };
+
+            mediaRecorder.start();
+
+            const frameInterval = 1000 / fps;
+            let currentIdx = 0;
+
+            function renderFrame() {
+                if (currentIdx >= loadedImages.length) {
+                    setTimeout(() => {
+                        mediaRecorder.stop();
+                    }, frameInterval);
+                    return;
+                }
+
+                renderingProgress.textContent = `Carregant foto ${currentIdx + 1} de ${loadedImages.length}...`;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(loadedImages[currentIdx], 0, 0, canvas.width, canvas.height);
+                
+                currentIdx++;
+                setTimeout(renderFrame, frameInterval);
+            }
+
+            renderFrame();
+        }
+
+        function closeModal() {
+            playPopSound();
+            videoModal.classList.add('hidden');
+            generatedVideoPlayer.pause();
+        }
+
+        btnCloseModal.addEventListener('click', closeModal);
+        btnCloseModalFooter.addEventListener('click', closeModal);
+
+        // GESTIÓ GLOBAL DEL TECLAT PER A NENS
+        window.addEventListener('keydown', (e) => {
+            const targetTag = e.target.tagName.toLowerCase();
+            if (targetTag === 'input' && e.target.type === 'text') return;
+
+            // Desvincular focus per evitar que la tecla torni a clicar un botó anterior
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+
+            // TECLA ESPAI -> FOTO
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                badgeSpace.classList.add('key-active');
+                captureFrame();
+            } 
+            // TECLA INTRO -> CREAR VÍDEO
+            else if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter') {
+                e.preventDefault();
+                badgeEnter.classList.add('key-active');
+                generateVideo();
+            } 
+            // BACKSPACE -> ESBORRAR ÚLTIMA FOTO
+            else if ((e.code === 'Backspace' || e.key === 'Backspace') && frames.length > 0) {
+                e.preventDefault();
+                playPopSound();
+                frames.pop();
+                updateTimeline();
+                updateOnionSkin();
+                updateStats();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.key === ' ') {
+                badgeSpace.classList.remove('key-active');
+            }
+            if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter') {
+                badgeEnter.classList.remove('key-active');
+            }
+        });
+
+        // ESDEVENIMENTS DELS BOTONS
+        btnCapture.addEventListener('click', (e) => {
+            e.preventDefault();
+            captureFrame();
+        });
+
+        btnGenerateVideo.addEventListener('click', (e) => {
+            e.preventDefault();
+            generateVideo();
+        });
+
+        btnClear.addEventListener('click', () => {
+            playPopSound();
+            if (frames.length === 0) return;
+            if (confirm("Vols esborrar totes les fotos i tornar a començar de zero? 🧼")) {
+                frames = [];
+                updateTimeline();
+                updateOnionSkin();
+                updateStats();
+            }
+        });
+
+        fpsRange.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            let speedText = `Mitjana (${val} foto/s)`;
+            if (val <= 3) speedText = `Lenta (${val} foto/s) 🐢`;
+            else if (val >= 9) speedText = `Molt Ràpida (${val} foto/s) 🐇`;
+            
+            fpsValue.textContent = speedText;
+            updateStats();
+        });
+
+        onionSkinToggle.addEventListener('change', () => {
+            playPopSound();
+            updateOnionSkin();
+        });
+
+        toggleGrid.addEventListener('change', (e) => {
+            playPopSound();
+            gridOverlay.style.display = e.target.checked ? 'grid' : 'none';
+        });
+
+        toggleMirror.addEventListener('change', (e) => {
+            playPopSound();
+            if (e.target.checked) {
+                video.classList.add('-scale-x-100');
+            } else {
+                video.classList.remove('-scale-x-100');
+            }
+        });
+
+        cameraSelect.addEventListener('change', (e) => {
+            initCamera(e.target.value);
+        });
+
+        btnRetryCamera.addEventListener('click', () => {
+            playPopSound();
+            initCamera();
+        });
+
+        window.onload = function() {
+            initCamera();
+        };
+    </script>
+</body>
+</html>
